@@ -9,6 +9,14 @@ class DbHelper {
   final int version = 1;
   Database db;
 
+  static final DbHelper _dbHelper = DbHelper._internal();
+
+  DbHelper._internal();
+
+  factory DbHelper() {
+    return _dbHelper;
+  }
+
   Future<Database> openDb() async {
     if (db == null) {
       db = await openDatabase(join(await getDatabasesPath(), 'shopping.db'),
@@ -37,15 +45,21 @@ class DbHelper {
     return id;
   }
 
-  Future<List<ShoppingList>> getLists()async{
-      final List<Map<String, dynamic>> maps = await db.query('lists');
+  Future<List<ShoppingList>> getLists() async {
+    final List<Map<String, dynamic>> maps = await db.query('lists');
 
-      return List.generate(maps.length, (i){
-        return ShoppingList(
-          maps[i]['id'],
-          maps[i]['name'],
-          maps[i]['priority']
-        );
-      });
-  } 
+    return List.generate(maps.length, (i) {
+      return ShoppingList(maps[i]['id'], maps[i]['name'], maps[i]['priority']);
+    });
+  }
+
+  Future<List<ListItem>> getItems(int idList) async {
+    final List<Map<String, dynamic>> maps =
+        await db.query('items', where: 'idList = ?', whereArgs: [idList]);
+
+    return List.generate(maps.length, (index) {
+      return ListItem(maps[index]['id'], maps[index]['idList'],
+          maps[index]['name'], maps[index]['quantity'], maps[index]['note']);
+    });
+  }
 }
