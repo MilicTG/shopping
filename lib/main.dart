@@ -12,15 +12,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Shopping List',
-      theme: ThemeData(primarySwatch: Colors.lightBlue),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Shopping List'),
-        ),
-        body: ShList(),
-      ),
-    );
+        title: 'Shopping List',
+        theme: ThemeData(primarySwatch: Colors.lightBlue),
+        home: ShList());
   }
 }
 
@@ -43,31 +37,59 @@ class _ShListState extends State<ShList> {
   @override
   Widget build(BuildContext context) {
     showData();
-    return ListView.builder(
-      itemCount: (shoppingList != null) ? shoppingList.length : 0,
-      itemBuilder: (BuildContext context, int index) {
-        return ListTile(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ItemsScreen(shoppingList[index])));
-          },
-          title: Text(shoppingList[index].name),
-          leading: CircleAvatar(
-            child: Text(shoppingList[index].priority.toString()),
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) =>
-                      dialog.buildDialog(context, shoppingList[index], false));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Shopping List'),
+      ),
+      body: ListView.builder(
+        itemCount: (shoppingList != null) ? shoppingList.length : 0,
+        itemBuilder: (BuildContext context, int index) {
+          return Dismissible(
+            key: Key(shoppingList[index].name),
+            onDismissed: (direction) {
+              String strName = shoppingList[index].name;
+              helper.deleteList(shoppingList[index]);
+              setState(() {
+                shoppingList.removeAt(index);
+              });
+              Scaffold.of(context)
+                  .showSnackBar(SnackBar(content: Text("$strName deleted")));
             },
-          ),
-        );
-      },
+            child: ListTile(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ItemsScreen(shoppingList[index])));
+              },
+              title: Text(shoppingList[index].name),
+              leading: CircleAvatar(
+                child: Text(shoppingList[index].priority.toString()),
+              ),
+              trailing: IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) => dialog.buildDialog(
+                          context, shoppingList[index], false));
+                },
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) =>
+                  dialog.buildDialog(context, ShoppingList(0, '', 0), true));
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.pink,
+      ),
     );
   }
 
